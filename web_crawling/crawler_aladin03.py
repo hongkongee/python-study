@@ -42,11 +42,16 @@ driver.find_element(By.XPATH, '//*[@id="Wa_header1_headerTop"]/div[2]/div[3]/ul[
 
 t.sleep(2)
 
-rank = 1
+
 
 with codecs.open(file_path, mode='w', encoding='utf-8') as f:
 
-    for i in range(3, 11):
+    cur_page_num = 2 # 현재 페이지 번호
+    target_page_num = 9 # 목적지 페이지 번호
+    rank = 1
+    
+    
+    while cur_page_num < target_page_num:
     
 
     
@@ -56,25 +61,22 @@ with codecs.open(file_path, mode='w', encoding='utf-8') as f:
         soup = BeautifulSoup(src, 'html.parser')
 
         div_list = soup.find_all('div', class_='ss_book_box')
+        # div_list = soup.select('div.ss_book_box') -> 가능
 
         for div in div_list:
             book_info = div.find_all('li')
             print(len(book_info), end=' ')
 
-            if len(book_info) < 5:
+            
+            if book_info[0].find('span', class_='ss_ht1') == None:
+                # 첫번째 li에 span class="ss_ht1"이 없다면 (사은품이 없는 책)
                 book_title = book_info[0].text
-                book_price = book_info[1].text
-                book_author = ' |  | '
+                book_author = book_info[1].text
+                book_price = book_info[2].text
             else:
-                if book_info[0].find('span', class_='ss_ht1') == None:
-                    # 첫번째 li에 span class="ss_ht1"이 없다면 (사은품이 없는 책)
-                    book_title = book_info[0].text
-                    book_author = book_info[1].text
-                    book_price = book_info[2].text
-                else:
-                    book_title = book_info[1].text
-                    book_author = book_info[2].text
-                    book_price = book_info[3].text
+                book_title = book_info[1].text
+                book_author = book_info[2].text
+                book_price = book_info[3].text
 
 
             auth_info = book_author.split(' | ')
@@ -89,7 +91,28 @@ with codecs.open(file_path, mode='w', encoding='utf-8') as f:
 
             rank += 1
 
-    t.sleep(1)
-    driver.find_element(By.XPATH, f'//*[@id="newbg_body"]/div[3]/ul/li[{i}]/a').click()
+        # 다음 페이지로 전환
+        cur_page_num += 1
+        driver.find_element(By.XPATH, f'//*[@id="newbg_body"]/div[3]/ul/li[{cur_page_num}]/a').click()
+        del soup
+        t.sleep(3)
 
+
+'''
+find(태그이름, class_=?? or id=??): 조건에 맞는 첫 번째 요소를 반환합니다.
+find_all(태그이름, class_=?? or id=??): 조건에 맞는 모든 요소를 리스트 형태로 반환합니다.
+select(선택자): CSS 선택자를 사용해 요소를 선택합니다.
+select_one(선택자): CSS 선택자를 사용해 첫 번째 요소를 선택합니다.
+
+find_parent(): 해당 요소의 부모 요소를 반환합니다. (직속 부모)
+find_parents(): 조건에 맞는 모든 부모 요소를 리스트 형태로 반환합니다.
+find_next_sibling(): 다음 형제 요소를 반환합니다.
+find_next_siblings(): 조건에 맞는 모든 다음 형제 요소를 리스트 형태로 반환합니다.
+find_previous_sibling(): 이전 형제 요소를 반환합니다.
+find_previous_siblings(): 조건에 맞는 모든 이전 형제 요소를 리스트 형태로 반환합니다.
+find_next(): 다음 요소를 반환합니다.
+find_all_next(): 모든 다음 요소를 리스트 형태로 반환합니다.
+find_previous(): 이전 요소를 반환합니다.
+find_all_previous(): 조건에 맞는 모든 이전 요소를 리스트 형태로 반환합니다.
+'''
 
